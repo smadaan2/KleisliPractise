@@ -5,8 +5,8 @@ import models.Contact
 import play.api.libs.json.{Format, Json}
 import repository.PhoneBook
 
-import scalaz.Scalaz._
-import scalaz._
+import scalaz.syntax.either._
+import scalaz.\/
 
 final case class HttpError(status: Int, message: String)
 
@@ -19,7 +19,7 @@ class ApiContactRepositoryService[M[_], Failure](phonebook: PhoneBook)(implicit 
   override def create(contact: Contact): M[\/[HttpError,Contact]] = {
     val contactWithId: Contact = contact.copy(id = phonebook.generateId)
     phonebook.contactsList.append(contactWithId)
-    contactWithId.right[HttpError].pure
+      m.pure(contactWithId.right[HttpError])
   }
 
 //  override def update(contactId: String, updtcontact: Contact): M[\/[HttpError,Contact]] = {

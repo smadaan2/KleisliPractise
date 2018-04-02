@@ -1,7 +1,8 @@
 package validation
 
 import errors.FailureFactory
-import models.{Contact, ContactType, PhoneType}
+import models.PhoneNumber.PhoneType
+import models.{Contact, ContactType}
 
 
 class ValidationContactService[Failure](implicit failures: FailureFactory[Failure]) {

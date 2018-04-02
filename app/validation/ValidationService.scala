@@ -1,6 +1,7 @@
 package validation
 
-import models.{Contact, ContactType, PhoneNumber, PhoneType}
+import models.PhoneNumber.PhoneType
+import models.{Contact, ContactType, PhoneNumber}
 import repository._
 import validation.ValidationError._
 import validation.ValidationUtils._

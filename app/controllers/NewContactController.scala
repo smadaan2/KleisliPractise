@@ -2,11 +2,12 @@ package controllers
 
 import common.{Async, Pimpers}
 import errors.FailureFactory
-import models.{Contact, ContactType, PhoneType}
+import models.Contact
 import play.api.libs.json.JsValue
-import play.api.mvc.{Request, Result}
+import play.api.mvc.Request
 import services.impl.{ContactRepositoryService, HttpError}
 import validation.ValidationContactService
+
 import scalaz._
 
 
