@@ -1,0 +1,20 @@
+
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing a sample home page
+GET           /                                                       controllers.HomeController.index
+POST          /create                                                 controllers.ContactController.create
+#PUT           /update/:id                                             controllers.ContactController.update(id)
+#DELETE        /delete/:id                                             controllers.ContactController.delete(id)
+#GET           /listContactsByType/:contacttype                        controllers.ContactController.listContactsByType(contacttype)
+#GET           /listContactsByPartialName/:name                        controllers.ContactController.listContactsByPartialName(name)
+#GET           /listPhoneNumberOfContact/:id                           controllers.ContactController.listPhoneNumberOfContact(id)
+#GET           /listPhoneNumberOfContactFilterByType/:id/:ptype        controllers.ContactController.listPhoneNumberOfContactFilterByType(id,ptype)
+#PUT           /addphonenumberincontact/:id                            controllers.ContactController.addPhoneNumberInContact(id)
+#PUT           /deletephonenumberincontact/:id/:phonenumber            controllers.ContactController.deletePhoneNumberFromContact(id,phonenumber)
+# Map static resources from the /public folder to the /assets URL path
+GET           /assets/*file                                           controllers.Assets.versioned(path="/public", file: Asset)
+
+      
