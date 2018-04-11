@@ -1,6 +1,6 @@
 package common
 
-import errors.FailureMaker
+import errors.{FailureAdapter, FailureMaker}
 import play.api.libs.json.{JsPath, JsResult, JsonValidationError}
 
 import scalaz.Kleisli
@@ -27,9 +27,9 @@ class Pimpers[M[_], Failure](implicit async: Async[M, Failure]) {
     def flatMap[T1](fn: T => M[T1]): M[T1] = async.flatMap(m)(fn)
     def >|>(validation: T => Seq[Failure])(implicit failureMaker: FailureMaker[Seq[Failure], Failure]): M[T] = m.flatMap { res =>
       validation(res) match {
-        case Nil => res.lift
-        case Seq(apierror) => apierror.fail
-        case f => f.turnIntoFailure
+        case Nil => (res.lift: M[T])
+        case Seq(apierror) => (async.fail(apierror): M[T])
+        case f => (f.turnIntoFailure: M[T])
       }
     }
   }
@@ -39,7 +39,15 @@ class Pimpers[M[_], Failure](implicit async: Async[M, Failure]) {
     def turnIntoFailure[Res](implicit failureMaker: FailureMaker[T, Failure]): M[Res] = async.fail(failureMaker(t))
   }
 
+//  implicit class AnyPimper1[T](t: Throwable) {
+//    def turnIntoFailure[Res](implicit failureMaker: FailureMaker[T, Failure]): M[Res] = async.fail1(t)
+//  }
+
   implicit class FailurePimper(failure: Failure) {
-    def fail[T]: M[T] = async.fail(failure)
+    def fail[T]: M[Failure] = async.fail(failure)
   }
+}
+
+object Pimpers{
+  def apply[M[_],Failure](implicit async: Async[M, Failure],failureAdapter: FailureAdapter[Failure]): Pimpers[M,Failure] = new Pimpers
 }

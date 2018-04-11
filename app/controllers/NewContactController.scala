@@ -1,9 +1,9 @@
 package controllers
 
 import common.{Async, Pimpers}
-import errors.FailureFactory
+import errors.{FailureAdapter, FailureFactory, FailureMaker}
 import models.Contact
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsPath, JsValue, JsonValidationError}
 import play.api.mvc.Request
 import services.impl.{ContactRepositoryService, HttpError}
 import validation.ValidationContactService
@@ -11,10 +11,13 @@ import validation.ValidationContactService
 import scalaz._
 
 
-class ControllerServices[M[_],Failure](contactRepoService: ContactRepositoryService[M]) {
-  val pimpers: Pimpers[M, Failure] = new Pimpers[M, Failure]
+class ControllerServices[M[_],Failure](contactRepoService: ContactRepositoryService[M])
+                                      (implicit failureAdapter: FailureAdapter[Failure],
+                                       async: Async[M,Failure]){
+  import failureAdapter._
+  val pimpers: Pimpers[M, Failure] = Pimpers[M, Failure]
   import pimpers._
-  val makeContactRequest = Kleisli{request: Request[JsValue] => request.body.validate[Contact] >> identity }
+  val makeContactRequest: Kleisli[M, Request[JsValue], Contact] = Kleisli{ request: Request[JsValue] => request.body.validate[Contact] >> identity }
   val createContact: Kleisli[M, Contact, \/[HttpError,Contact]] = Kleisli{ ct: Contact => contactRepoService.create(ct)}
   //def updateContact(contactId: String): Kleisli[M, Contact, \/[HttpError,Contact]] = Kleisli{ct: Contact => contactRepoService.update(contactId,ct) }
 }
@@ -23,8 +26,10 @@ class ControllerServices[M[_],Failure](contactRepoService: ContactRepositoryServ
 class NewContactController[M[_],Failure](contactRepoService: ContactRepositoryService[M])
                                         (implicit validationOfContact: ValidationContactService[Failure],
                                          failures: FailureFactory[Failure],
-                                         aync: Async[M,Failure]) extends ControllerServices[M,Failure](contactRepoService) {
+                                         failureAdapter: FailureAdapter[Failure],
+                                         async: Async[M,Failure]) extends ControllerServices[M,Failure](contactRepoService) {
   import pimpers._
+  import failureAdapter._
   val createNewContact = makeContactRequest >|> validationOfContact.validators >+> createContact
   //def updateContact(contactId: String) = makeContactRequest >|> validationOfContact.validators  >+> updateContact(contactId)
 }
